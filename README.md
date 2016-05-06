@@ -14,7 +14,7 @@ Simply select an name, a room and switch online. A still image is shot every min
 ### Self-hosted installation / development
 ---
 ```bash
-> git clone https://github.com/gpailler/tPresent.git
+> git clone --recursive https://github.com/gpailler/tPresent.git
 > cd tPresent
 
 > pip install virtualenv
