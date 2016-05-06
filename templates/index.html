@@ -83,12 +83,6 @@
 
         <!-- Pictures -->
         <div id="tiles-container" class="tile-container no-visible">
-            <div id="tile-me" class="tile-large bg-grayLight fg-white" style="height: 232px;" data-role="tile">
-                <div class="tile-content">
-                    <span class="tile-label">Me</span>
-                    <img id="me" />
-                </div>
-            </div>
         </div>
 
         <!-- Information popups -->
@@ -287,24 +281,32 @@
                     type: 'GET',
                     success: function(response)
                     {
-                        // Update myself
-                        $('img#me').attr('src', response.members[$('input#display_name').val()]);
+                        // Remove all tiles
+                        $('div#tiles-container').find('.tile-member').remove();
 
-                        // Sort names and display them
-                        $('div#tiles-container').find('.tile-user').remove();
-
+                        // Sort members by name but display myself at first position
                         var names = Object.keys(response.members);
-                        // Remove myself
-                        var idx = names.indexOf($('input#display_name').val());
-                        names.splice(idx, 1);
+                        names.sort(function(x, y)
+                        {
+                            if (x == $('input#display_name').val()) return -1;
+                            if (y == $('input#display_name').val()) return 1;
 
-                        names.sort();
+                            var x = x.toLowerCase();
+                            var y = y.toLowerCase();
+
+                            return x < y ? -1 : x > y ? 1 : 0;
+                        });
 
                         for (var i = 0; i < names.length; i++)
                         {
                             var key = names[i];
                             var value = response.members[key];
-                            $('div#tiles-container').append('<div class="tile-user tile-big bg-grayLight fg-white" style="height: 352px;" data-role="tile"><div class="tile-content"><div class="tile-label">' + key + '</div><img src="' + value + '" /></div></div>');
+                            if (key == $('input#display_name').val())
+                            {
+                                key = 'Me';
+                            }
+
+                            $('div#tiles-container').append('<div class="tile-member tile-big bg-grayLight fg-white" style="width:450px; height:330px;" data-role="tile"><div class="tile-content"><div class="tile-label">' + key + '</div><img src="' + value + '" /></div></div>');
                         }
                     },
                     error: function(error)
