@@ -20,17 +20,21 @@ class RoomCache:
     def __init__(self):
         self.cache = {}
 
-    def add(self, user, image):
-        self.cache[user] = (datetime.utcnow(), image)
+    def add(self, user, image, time):
+        self.cache[user] = (datetime.utcnow(), image, time)
 
     def get(self):
         self.__clean()
 
-        result = {}
+        results = []
         for key, value in list(self.cache.items()):
-            result[key] = value[1]
+            result = {}
+            result['name'] = key
+            result['image'] = value[1]
+            result['time'] = value[2]
+            results.append(result)
 
-        return result
+        return results
 
     def __clean(self):
         for key, value in list(self.cache.items()):
@@ -66,13 +70,14 @@ def presence(room_name):
 
     display_name = args.get('display_name')
     image = args.get('image', None)
-    if len(display_name) == 0 or len(image) == 0:
+    time = args.get('time', None)
+    if len(display_name) == 0 or len(image) == 0 or len(time) == 0:
         abort(500)
 
     if cache_entry is None:
         cache_entry = RoomCache()
 
-    cache_entry.add(display_name, image)
+    cache_entry.add(display_name, image, time)
     cache.set(room_name, cache_entry, timeout=CACHE_RETENTION)
 
     return ''

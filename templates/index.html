@@ -233,6 +233,8 @@
             {
                 var image;
                 Webcam.snap(function(data_uri) { image = data_uri });
+
+                var time = new Date().toTimeString().substr(0,5);
                 $.ajax(
                 {
                     url: scriptroot + '/presence/' + $('input#room_name').val(),
@@ -241,7 +243,8 @@
                     data: JSON.stringify(
                     {
                         display_name: $('input#display_name').val(),
-                        image: image
+                        image: image,
+                        time: time
                     })
                 })
                 .done(function(response)
@@ -272,28 +275,29 @@
                         $('div#tiles-container').find('.tile-member').remove();
 
                         // Sort members by name but display myself at first position
-                        var names = Object.keys(response.members);
-                        names.sort(function(x, y)
+                        var members = response.members;
+                        members.sort(function(x, y)
                         {
-                            if (x == $('input#display_name').val()) return -1;
-                            if (y == $('input#display_name').val()) return 1;
+                            if (x['name'] == $('input#display_name').val()) return -1;
+                            if (y['name'] == $('input#display_name').val()) return 1;
 
-                            var x = x.toLowerCase();
-                            var y = y.toLowerCase();
+                            var x = x['name'].toLowerCase();
+                            var y = y['name'].toLowerCase();
 
                             return x < y ? -1 : x > y ? 1 : 0;
                         });
 
-                        for (var i = 0; i < names.length; i++)
+                        for (var i = 0; i < members.length; i++)
                         {
-                            var key = names[i];
-                            var value = response.members[key];
-                            if (key == $('input#display_name').val())
+                            var name = members[i]['name'];
+                            var image = members[i]['image'];
+                            var time = members[i]['time'];
+                            if (name == $('input#display_name').val())
                             {
-                                key = 'Me';
+                                name = 'Me';
                             }
 
-                            $('div#tiles-container').append('<div class="tile-member tile-big bg-grayLight fg-white" style="width:450px; height:330px;" data-role="tile"><div class="tile-content"><div class="tile-label">' + key + '</div><img src="' + value + '" /></div></div>');
+                            $('div#tiles-container').append('<div class="tile-member tile-big bg-grayLight fg-white" style="width:450px; height:330px;" data-role="tile"><div class="tile-content"><div class="tile-label">' + name + ' (' + time + ')</div><img src="' + image + '" /></div></div>');
                         }
                     },
                     error: function(error)
