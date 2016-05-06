@@ -153,6 +153,29 @@
                 {
                     if($(this).is(":checked"))
                     {
+                        // Deny on air if fields are not filled
+                        $('input#display_name').removeClass('error');
+                        $('input#room_name').removeClass('error');
+
+                        var hasError = false;
+                        if ($('input#display_name').val().length == 0)
+                        {
+                            $('input#display_name').addClass('error');
+                            hasError = true;
+                        }
+
+                        if ($('input#room_name').val().length == 0)
+                        {
+                            $('input#room_name').addClass('error');
+                            hasError = true;
+                        }
+
+                        if (hasError)
+                        {
+                            $(this).attr('checked', false);
+                            return;
+                        }
+
                         // Set local storage
                         localStorage.setItem('display_name', $('input#display_name').val());
                         localStorage.setItem('room_name', $('input#room_name').val());
