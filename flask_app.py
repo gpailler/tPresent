@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, abort
+from flask import Flask, render_template, request, jsonify, abort, send_from_directory
 from werkzeug.contrib.cache import SimpleCache
 from datetime import datetime, timedelta
 
@@ -76,6 +76,11 @@ def presence(room_name):
     cache.set(room_name, cache_entry, timeout=CACHE_RETENTION)
 
     return ''
+
+
+@app.route('/webcamjs/<path:path>')
+def webcamjs(path):
+    return send_from_directory('webcamjs', path)
 
 
 if __name__ == '__main__':

@@ -96,10 +96,10 @@
         </div>
 
 
-        <video id="video" width="0" height="0"></video>
-        <canvas id="canvas" width="{{ capture_width }}" height="{{ capture_height }}" style="display: none;"></canvas>
+        <div id="video" style="display:none;"></div>
 
-        <script>
+        <script src="webcamjs/webcam.min.js"></script>
+        <script language="JavaScript">
             var scriptroot = {{ request.script_root|tojson|safe }};
             var refreshTimer;
             var refreshProgressionTimer;
@@ -112,37 +112,24 @@
 
 
                 // Initialize video capture stuff
-                var video = $('video#video').get(0);
-                navigator.getMedia = ( navigator.getUserMedia ||
-                                       navigator.webkitGetUserMedia ||
-                                       navigator.mozGetUserMedia ||
-                                       navigator.msGetUserMedia);
+                Webcam.set({
+                    width: 1,
+                    height: 1,
+                    dest_width: {{ capture_width }},
+                    dest_height: {{ capture_height }},
+                    image_format: 'jpeg',
+                    jpeg_quality: 80,
+                    fps: 1
+                });
 
-                navigator.getMedia(
+                Webcam.on('error', function(err)
                 {
-                    video: true,
-                    audio: false
-                },
-                function(stream)
-                {
-                    if (navigator.mozGetUserMedia)
-                    {
-                        video.mozSrcObject = stream;
-                    }
-                    else
-                    {
-                        var vendorURL = window.URL || window.webkitURL;
-                        video.src = vendorURL.createObjectURL(stream);
-                    }
+                    showError("Unable to access capture device: " + err);
+                });
 
-                    video.pause();
-                },
-                function(err)
-                {
-                    showError("Unable to access capture device: " + err.name);
-                }
-                );
+                Webcam.attach('#video');
 
+                // On air button (stream activation/deactivation)
                 $('input#on_air').change(function()
                 {
                     if($(this).is(":checked"))
@@ -244,8 +231,8 @@
 
             function sendPresence()
             {
-                canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-                var image = canvas.toDataURL('image/jpeg', 0.8);
+                var image;
+                Webcam.snap(function(data_uri) { image = data_uri });
                 $.ajax(
                 {
                     url: scriptroot + '/presence/' + $('input#room_name').val(),
