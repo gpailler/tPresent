@@ -28,6 +28,7 @@
             <div class="content padding10 fg-white bg-grayDark">
                 <div class="grid">
                     <div class="row cells4">
+
                         <!-- Display name -->
                         <div class="cell">
                             <div class="input-control text full-size">
@@ -67,7 +68,7 @@
                         <!-- GitHub -->
                         <div class="cell align-right">
                             <a href="https://www.github.com/gpailler/tpresent">
-                                <span data-role="hint" data-hint-position="left" data-hint="tPresent|Contribute on GitHub">
+                                <span data-role="hint" data-hint-position="left" data-hint="tPresent|GitHub project">
                                 <span class="mif-github fg-white mif-2x"></span>
                                 </span>
                             </a>
@@ -87,7 +88,7 @@
             </div>
         </div>
 
-        <!-- Popups -->
+        <!-- Information popups -->
         <div id="default-message" class="dialog padding30" data-role="dialog">
             <h2>tPresent</h2>
             Please fill <strong>Display name</strong>, <strong>Room name</strong> and activate <strong>On air</strong>.
@@ -98,8 +99,8 @@
         </div>
 
 
-        <video id="video" width="0" height="0" />
-        <canvas id="canvas" width="{{ capture_width }}" height="{{ capture_height }}" style="display: none;" />
+        <video id="video" width="0" height="0"></video>
+        <canvas id="canvas" width="{{ capture_width }}" height="{{ capture_height }}" style="display: none;"></canvas>
 
         <script>
             var scriptroot = {{ request.script_root|tojson|safe }};
