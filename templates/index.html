@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+        <link href="https://cdn.rawgit.com/olton/Metro-UI-CSS/master/build/css/metro.min.css" rel="stylesheet">
+        <link href="https://cdn.rawgit.com/olton/Metro-UI-CSS/master/build/css/metro-icons.min.css" rel="stylesheet">
+        <link href="https://cdn.rawgit.com/olton/Metro-UI-CSS/master/build/css/metro-responsive.min.css" rel="stylesheet">
+
+       <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
+       <script src="https://cdn.rawgit.com/olton/Metro-UI-CSS/master/build/js/metro.min.js"></script>
+
+       <title>tPresent</title>
+    </head>
+
+    <body class="bg-grayDark">
+        <!-- Configuration panel -->
+        <div class="panel bg-dark" data-role="panel">
+            <!-- Header -->
+            <div class="heading bg-grayDarker">
+                <span class="icon mif-wrench bg-grayLight"></span>
+                <span class="title">tPresent</span>
+            </div>
+
+            <!-- Content -->
+            <div class="content padding10 fg-white bg-grayDark">
+                <div class="grid">
+                    <div class="row cells4">
+                        <!-- Display name -->
+                        <div class="cell">
+                            <div class="input-control text full-size">
+                                <label>Display name</label>
+                                <span class="mif-user prepend-icon"></span>
+                                <input type="text" id="display_name">
+                            </div>
+                        </div>
+
+                        <!-- Room name -->
+                        <div class="cell">
+                            <div class="input-control text full-size">
+                                <label>Room name</label>
+                                <span class="mif-organization prepend-icon"></span>
+                                <input type="text" id="room_name">
+                            </div>
+                        </div>
+
+                        <!-- Live -->
+                        <div class="cell">
+                            <div class="grid align-right">
+                                <div class="row cells2">
+                                    <div class="cell">
+                                        <h4 class="align-right no-margin">On air</h4>
+                                    </div>
+                                    <div class="cell align-left">
+                                        <label class="switch">
+                                            <input type="checkbox" id="on_air">
+                                            <span class="check margin5"></span>
+                                        </label>
+                                        <span id="on_air_icon" class="mif-feed mif-ani-heartbeat mif-ani-slow fg-red no-visible" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- GitHub -->
+                        <div class="cell align-right">
+                            <a href="https://www.github.com/gpailler/tpresent">
+                                <span data-role="hint" data-hint-position="left" data-hint="tPresent|Contribute on GitHub">
+                                <span class="mif-github fg-white mif-2x"></span>
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pictures -->
+        <div id="tiles-container" class="tile-container no-visible">
+            <div id="tile-me" class="tile-large bg-grayLight fg-white" style="height: 232px;" data-role="tile">
+                <div class="tile-content">
+                    <span class="tile-label">Me</span>
+                    <img id="me" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Popups -->
+        <div id="default-message" class="dialog padding30" data-role="dialog">
+            <h2>tPresent</h2>
+            Please fill <strong>Display name</strong>, <strong>Room name</strong> and activate <strong>On air</strong>.
+        </div>
+        <div id="error-message" class="dialog padding30" data-role="dialog" data-type="alert">
+            <h2>Error</h2>
+            <p />
+        </div>
+
+
+        <video id="video" width="0" height="0" />
+        <canvas id="canvas" width="{{ capture_width }}" height="{{ capture_height }}" style="display: none;" />
+
+        <script>
+            var scriptroot = {{ request.script_root|tojson|safe }};
+            var refreshTimer;
+
+            $(function()
+            {
+                // Retrieve local storage data
+                $('input#display_name').val(localStorage.getItem('display_name'));
+                $('input#room_name').val(localStorage.getItem('room_name'));
+
+
+                // Initialize video capture stuff
+                var video = $('video#video').get(0);
+                navigator.getMedia = ( navigator.getUserMedia ||
+                                       navigator.webkitGetUserMedia ||
+                                       navigator.mozGetUserMedia ||
+                                       navigator.msGetUserMedia);
+
+                navigator.getMedia(
+                {
+                    video: true,
+                    audio: false
+                },
+                function(stream)
+                {
+                    if (navigator.mozGetUserMedia)
+                    {
+                        video.mozSrcObject = stream;
+                    }
+                    else
+                    {
+                        var vendorURL = window.URL || window.webkitURL;
+                        video.src = vendorURL.createObjectURL(stream);
+                    }
+
+                    video.pause();
+                },
+                function(err)
+                {
+                    showError("Unable to access capture device: " + err.name);
+                }
+                );
+
+                $('input#on_air').change(function()
+                {
+                    if($(this).is(":checked"))
+                    {
+                        // Set local storage
+                        localStorage.setItem('display_name', $('input#display_name').val());
+                        localStorage.setItem('room_name', $('input#room_name').val());
+
+                        hideAll();
+                        disableInputsEdition(true);
+                        $('div#tiles-container').removeClass('no-visible');
+                        $('span#on_air_icon').removeClass('no-visible');
+
+                        sendPresence();
+                    }
+                    else
+                    {
+                        hideAll();
+                        disableInputsEdition(false);
+                        showMetroDialog('div#default-message');
+
+                        clearTimeout(refreshTimer);
+                    }
+                });
+
+                showMetroDialog('div#default-message');
+            });
+
+            function showError(msg)
+            {
+                hideAll();
+                $('div#error-message').find('p').text(msg);
+                showMetroDialog('div#error-message');
+
+                disableInputsEdition(true);
+                $('input#on_air').attr('disabled', true);
+            }
+
+            function hideAll()
+            {
+                $('div#tiles-container').addClass('no-visible');
+                $('span#on_air_icon').addClass('no-visible');
+                hideMetroDialog('div#error-message');
+                hideMetroDialog('div#default-message');
+            }
+
+            function disableInputsEdition(flag)
+            {
+                $('input#display_name').attr('disabled', flag);
+                $('input#room_name').attr('disabled', flag);
+            }
+
+            function sendPresence()
+            {
+                canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                var image = canvas.toDataURL('image/jpeg', 0.8);
+                $.ajax(
+                {
+                    url: scriptroot + '/presence/' + $('input#room_name').val(),
+                    contentType: 'application/json;charset=UTF-8',
+                    type: 'POST',
+                    data: JSON.stringify(
+                    {
+                        display_name: $('input#display_name').val(),
+                        image: image
+                    }),
+                    success: function(response)
+                    {
+                        getPresences();
+                        refreshTimer = setTimeout(sendPresence, {{ refresh_interval }});
+                    },
+                    error: function(error)
+                    {
+                        console.log(error);
+                        refreshTimer = setTimeout(sendPresence, {{ refresh_interval }});
+                    }
+                });
+            }
+
+            function getPresences()
+            {
+                $.ajax(
+                {
+                    url: scriptroot + '/presence/' + $('input#room_name').val(),
+                    contentType: 'application/json;charset=UTF-8',
+                    type: 'GET',
+                    success: function(response)
+                    {
+                        // Update myself
+                        $('img#me').attr('src', response.members[$('input#display_name').val()]);
+
+                        // Sort names and display them
+                        $('div#tiles-container').find('.tile-user').remove();
+
+                        var names = Object.keys(response.members);
+                        // Remove myself
+                        var idx = names.indexOf($('input#display_name').val());
+                        names.splice(idx, 1);
+
+                        names.sort();
+
+                        for (var i = 0; i < names.length; i++)
+                        {
+                            var key = names[i];
+                            var value = response.members[key];
+                            $('div#tiles-container').append('<div class="tile-user tile-big bg-grayLight fg-white" style="height: 352px;" data-role="tile"><div class="tile-content"><div class="tile-label">' + key + '</div><img src="' + value + '" /></div></div>');
+                        }
+                    },
+                    error: function(error)
+                    {
+                        console.log(error);
+                    }
+                });
+            }
+        </script>
+    </body>
+</html>
+
