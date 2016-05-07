@@ -11,6 +11,7 @@
         <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
         <script src="https://cdn.rawgit.com/olton/Metro-UI-CSS/master/build/js/metro.min.js"></script>
         <script src="https://cdn.rawgit.com/jhuckaby/webcamjs/master/webcam.min.js"></script>
+        <script src="https://cdn.rawgit.com/broofa/node-uuid/master/uuid.js"></script>
 
         <title>tPresent</title>
     </head>
@@ -102,12 +103,21 @@
             var scriptroot = {{ request.script_root|tojson|safe }};
             var refreshTimer;
             var refreshProgressionTimer;
+            var uniqueId;
 
             $(function()
             {
                 // Retrieve local storage data
                 $('input#display_name').val(localStorage.getItem('display_name'));
                 $('input#room_name').val(localStorage.getItem('room_name'));
+
+                // Generates/retrieve an unique Id
+                uniqueId = localStorage.getItem('unique_id');
+                if (uniqueId == null)
+                {
+                    uniqueId = uuid.v1();
+                    localStorage.setItem('unique_id', uniqueId);
+                }
 
 
                 // Initialize video capture stuff
@@ -243,7 +253,8 @@
                     {
                         display_name: $('input#display_name').val(),
                         image: image,
-                        time: time
+                        time: time,
+                        unique_id: uniqueId
                     })
                 })
                 .done(function(response)
@@ -277,26 +288,33 @@
                         var members = response.members;
                         members.sort(function(x, y)
                         {
-                            if (x['name'] == $('input#display_name').val()) return -1;
-                            if (y['name'] == $('input#display_name').val()) return 1;
+                            if (x['unique_id'] == uniqueId) return -1;
+                            if (y['unique_id'] == uniqueId) return 1;
 
-                            var x = x['name'].toLowerCase();
-                            var y = y['name'].toLowerCase();
+                            var x = x['display_name'].toLowerCase();
+                            var y = y['display_name'].toLowerCase();
 
                             return x < y ? -1 : x > y ? 1 : 0;
                         });
 
                         for (var i = 0; i < members.length; i++)
                         {
-                            var name = members[i]['name'];
+                            var display_name = members[i]['display_name'];
                             var image = members[i]['image'];
                             var time = members[i]['time'];
-                            if (name == $('input#display_name').val())
+                            if (members[i]['unique_id'] == uniqueId)
                             {
-                                name = 'Me';
+                                display_name = 'Me';
                             }
 
-                            $('div#tiles-container').append('<div class="tile-member tile-big bg-grayLight fg-white" style="width:450px; height:330px;" data-role="tile"><div class="tile-content"><div class="tile-label">' + name + ' (' + time + ')</div><img src="' + image + '" /></div></div>');
+                            $('div#tiles-container').append(
+                                '<div class="tile-member tile-big bg-grayLight fg-white" style="width:450px; height:330px;" data-role="tile">' +
+                                    '<div class="tile-content">'+
+                                        '<div class="tile-label">' + display_name + '</div>' +
+                                        '<div class="tile-label full-size align-right" style="padding-right: 25px;">' + time + '</div>' +
+                                        '<img src="' + image + '" />' +
+                                    '</div>' +
+                                '</div>');
                         }
                     },
                     error: function(error)
