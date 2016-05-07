@@ -83,11 +83,6 @@ def presence(room_name):
     return ''
 
 
-@app.route('/webcamjs/<path:path>')
-def webcamjs(path):
-    return send_from_directory('webcamjs', path)
-
-
 if __name__ == '__main__':
     app.run(debug=DEBUG,
             host=BIND,
