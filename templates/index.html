@@ -110,6 +110,7 @@
                 // Retrieve local storage data
                 $('input#display_name').val(localStorage.getItem('display_name'));
                 $('input#room_name').val(localStorage.getItem('room_name'));
+                $('input#on_air').attr('autocomplete', 'off');
 
                 // Generates/retrieve an unique Id
                 uniqueId = localStorage.getItem('unique_id');
