@@ -100,6 +100,7 @@
         <div id="video" style="display:none;"></div>
 
         <script language="JavaScript">
+            var animationDelay = 250;
             var scriptroot = {{ request.script_root|tojson|safe }};
             var refreshTimer;
             var refreshProgressionTimer;
@@ -107,6 +108,8 @@
 
             $(function()
             {
+                showMetroDialog('div#default-message');
+
                 // Retrieve local storage data
                 $('input#display_name').val(localStorage.getItem('display_name'));
                 $('input#room_name').val(localStorage.getItem('room_name'));
@@ -120,88 +123,97 @@
                     localStorage.setItem('unique_id', uniqueId);
                 }
 
-
-                // Initialize video capture stuff
-                Webcam.set({
-                    width: 1,
-                    height: 1,
-                    dest_width: {{ capture_width }},
-                    dest_height: {{ capture_height }},
-                    image_format: 'jpeg',
-                    jpeg_quality: 80,
-                    fps: 1
-                });
-
-                Webcam.on('error', function(err)
-                {
-                    showError("Unable to access capture device: " + err);
-                });
-
-                Webcam.attach('#video');
-
                 // On air button (stream activation/deactivation)
                 $('input#on_air').change(function()
                 {
                     if($(this).is(":checked"))
                     {
-                        // Deny on air if fields are not filled
-                        $('input#display_name').removeClass('error');
-                        $('input#room_name').removeClass('error');
-
-                        var hasError = false;
-                        if ($('input#display_name').val().length == 0)
-                        {
-                            $('input#display_name').addClass('error');
-                            hasError = true;
-                        }
-
-                        if ($('input#room_name').val().length == 0)
-                        {
-                            $('input#room_name').addClass('error');
-                            hasError = true;
-                        }
-
-                        if (hasError)
-                        {
-                            $(this).attr('checked', false);
-                            return;
-                        }
-
-                        // Set local storage
-                        localStorage.setItem('display_name', $('input#display_name').val());
-                        localStorage.setItem('room_name', $('input#room_name').val());
-
-                        hideAll();
-                        disableInputsEdition(true);
-                        $('div#tiles-container').removeClass('no-visible');
-                        $('span#on_air_icon').removeClass('no-visible');
-                        $('div#refresh').removeClass('no-visible');
-                        $('div#refresh').data('progress').set(0);
-
-                        sendPresence();
+                        startOnAir();
                     }
                     else
                     {
-                        hideAll();
-                        disableInputsEdition(false);
-                        showMetroDialog('div#default-message');
-
-                        clearTimeout(refreshTimer);
-                        clearInterval(refreshProgressionTimer);
+                        stopOnAir();
                     }
                 });
-
-                showMetroDialog('div#default-message');
             });
+
+            function startOnAir()
+            {
+                // Cancel on air if fields are not filled
+                $('input#display_name').removeClass('error');
+                $('input#room_name').removeClass('error');
+
+                var hasError = false;
+                if ($('input#display_name').val().length == 0)
+                {
+                    $('input#display_name').addClass('error');
+                    hasError = true;
+                }
+
+                if ($('input#room_name').val().length == 0)
+                {
+                    $('input#room_name').addClass('error');
+                    hasError = true;
+                }
+
+                if (hasError)
+                {
+                    $('input#on_air').attr('checked', false);
+                    return;
+                }
+
+                // Add extra delay to not block checkbox animation
+                setTimeout(function() { initWebcam(onWebcamStarted, onWebcamError); }, animationDelay);
+            }
+
+            function stopOnAir()
+            {
+                setTimeout(releaseWebcam, animationDelay);
+
+                hideAll();
+                disableInputsEdition(false);
+                showMetroDialog('div#default-message');
+
+                clearTimeout(refreshTimer);
+                clearInterval(refreshProgressionTimer);
+            }
+
+            function onWebcamStarted()
+            {
+                // Set local storage
+                localStorage.setItem('display_name', $('input#display_name').val());
+                localStorage.setItem('room_name', $('input#room_name').val());
+
+                hideAll();
+                disableInputsEdition(true);
+                $('div#tiles-container').removeClass('no-visible');
+                $('span#on_air_icon').removeClass('no-visible');
+                $('div#refresh').removeClass('no-visible');
+                $('div#refresh').data('progress').set(0);
+
+                // Call sendPresence after a small delay to avoid first black/dark frane
+                setTimeout(sendPresence, animationDelay);
+            }
+
+            function onWebcamError(err)
+            {
+                stopOnAir();
+                $('input#on_air').attr('checked', false);
+                if (err.name == 'PermissionDeniedError')
+                {
+                    showError('Unable to access capture device. Please authorized camera access.');
+                }
+                else
+                {
+                    showError('Unable to access capture device: ' + err.name + ' ' + err.message);
+                }
+            }
 
             function showError(msg)
             {
                 hideAll();
                 $('div#error-message').find('p').text(msg);
                 showMetroDialog('div#error-message');
-
-                disableInputsEdition(true);
-                $('input#on_air').attr('disabled', true);
             }
 
             function hideAll()
@@ -237,6 +249,33 @@
                         clearInterval(refreshProgressionTimer);
                     }
                 }, updateInterval);
+            }
+
+            function initWebcam(onSuccess, onError)
+            {
+                // Initialize video capture stuff
+                Webcam.set({
+                    width: 1,
+                    height: 1,
+                    dest_width: {{ capture_width }},
+                    dest_height: {{ capture_height }},
+                    image_format: 'jpeg',
+                    jpeg_quality: 80,
+                    fps: 1,
+                    enable_flash: false
+                });
+
+                Webcam.on('error', onError);
+                Webcam.on('live', onSuccess);
+
+                Webcam.attach('#video');
+            }
+
+            function releaseWebcam()
+            {
+                Webcam.off('error');
+                Webcam.off('live');
+                Webcam.reset();
             }
 
             function sendPresence()
