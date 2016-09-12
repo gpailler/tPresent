@@ -244,12 +244,23 @@
                 var step = 100 / (step / updateInterval);
                 var progression = $('div#refresh').data('progress');
                 var val = 0;
+
+                var favicon_color = 'red';
                 refreshProgressionTimer = setInterval(function()
                 {
+                    // Simulate favicon blink before taking a new screenshot
+                    if (val >= 90)
+                    {
+                        favicon_color = favicon_color == 'red' ? 'blue' : 'red';
+                        $('#favicon').attr('href', 'static/favicon_' + favicon_color + '.png');
+                    }
+
                     val += step;
                     progression.set(val);
                     if (val >= 100)
                     {
+                        favicon_color = 'red;'
+                        $('#favicon').attr('href', 'static/favicon_red.png');
                         clearInterval(refreshProgressionTimer);
                     }
                 }, updateInterval);
