@@ -5,6 +5,8 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
+        <link id="favicon" rel="shortcut icon" type="image/png" href="static/favicon_grey.png" />
+
         <link href="https://cdn.rawgit.com/olton/Metro-UI-CSS/master/build/css/metro.min.css" rel="stylesheet">
         <link href="https://cdn.rawgit.com/olton/Metro-UI-CSS/master/build/css/metro-icons.min.css" rel="stylesheet">
 
@@ -168,6 +170,8 @@
             {
                 setTimeout(releaseWebcam, animationDelay);
 
+                $('#favicon').attr('href', 'static/favicon_grey.png');
+
                 hideAll();
                 disableInputsEdition(false);
                 showMetroDialog('div#default-message');
@@ -188,6 +192,8 @@
                 $('span#on_air_icon').removeClass('no-visible');
                 $('div#refresh').removeClass('no-visible');
                 $('div#refresh').data('progress').set(0);
+
+                $('#favicon').attr('href', 'static/favicon_red.png');
 
                 // Call sendPresence after a small delay to avoid first black/dark frane
                 setTimeout(sendPresence, animationDelay);
