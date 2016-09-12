@@ -196,7 +196,12 @@
                 $('#favicon').attr('href', 'static/favicon_red.png');
 
                 // Call sendPresence after a small delay to avoid first black/dark frane
-                setTimeout(sendPresence, animationDelay);
+                setTimeout(function() {
+                    sendPresence();
+
+                    // Scroll to hide options
+                    $('html, body').animate({ scrollTop: $('div#refresh').offset().top }, 100);
+                }, animationDelay);
             }
 
             function onWebcamError(err)
