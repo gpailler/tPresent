@@ -10,7 +10,7 @@ REFRESH_INTERVAL = 60  # Seconds
 CACHE_RETENTION = REFRESH_INTERVAL * 2
 CAPTURE_WIDTH = 640
 CAPTURE_HEIGHT = 480
-
+VERSION = '1.0.1'
 
 cache = SimpleCache()
 app = Flask(__name__)
@@ -49,7 +49,8 @@ def default():
     return render_template('index.html',
                            refresh_interval=REFRESH_INTERVAL * 1000,
                            capture_width=CAPTURE_WIDTH,
-                           capture_height=CAPTURE_HEIGHT)
+                           capture_height=CAPTURE_HEIGHT,
+                           version=VERSION)
 
 
 @app.route('/presence/<room_name>', methods=['GET'])
@@ -86,6 +87,11 @@ def presence(room_name):
     cache.set(room_name, cache_entry, timeout=CACHE_RETENTION)
 
     return ''
+
+
+@app.route('/version', methods=['GET'])
+def version():
+    return jsonify({'version': VERSION})
 
 
 if __name__ == '__main__':
