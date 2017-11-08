@@ -10,7 +10,7 @@ REFRESH_INTERVAL = 60  # Seconds
 CACHE_RETENTION = REFRESH_INTERVAL * 2
 CAPTURE_WIDTH = 640
 CAPTURE_HEIGHT = 480
-VERSION = '1.0.1'
+VERSION = '1.0.2'
 
 cache = SimpleCache()
 app = Flask(__name__)

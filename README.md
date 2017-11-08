@@ -14,14 +14,20 @@ Simply select an name, a room and switch online. A still image is shot every min
 
 
 ### Self-hosted installation / development
+tPresent requires Python3
 ---
 ```bash
 > git clone --recursive https://github.com/gpailler/tPresent.git
 > cd tPresent
 
 > pip install virtualenv
-> virtualenv venv --python=python3.4
+> virtualenv venv
+
+# Mac/Linux
 > source venv/bin/activate
+
+# Windows
+> venv\Scripts\activate
 
 > pip install -r requirements.txt
 

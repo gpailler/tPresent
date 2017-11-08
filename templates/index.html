@@ -7,12 +7,12 @@
 
         <link id="favicon" rel="shortcut icon" type="image/png" href="static/favicon_grey.png" />
 
-        <link href="https://cdn.rawgit.com/olton/Metro-UI-CSS/master/build/css/metro.min.css" rel="stylesheet">
-        <link href="https://cdn.rawgit.com/olton/Metro-UI-CSS/master/build/css/metro-icons.min.css" rel="stylesheet">
+        <link href="https://cdn.rawgit.com/olton/Metro-UI-CSS/5b845124/build/css/metro.min.css" rel="stylesheet">
+        <link href="https://cdn.rawgit.com/olton/Metro-UI-CSS/5b845124/build/css/metro-icons.min.css" rel="stylesheet">
 
-        <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
-        <script src="https://cdn.rawgit.com/olton/Metro-UI-CSS/master/build/js/metro.min.js"></script>
-        <script src="https://cdn.rawgit.com/jhuckaby/webcamjs/master/webcam.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+        <script src="https://cdn.rawgit.com/olton/Metro-UI-CSS/5b845124/build/js/metro.min.js"></script>
+        <script src="https://cdn.rawgit.com/jhuckaby/webcamjs/b531a115/webcam.min.js"></script>
         <script src="https://cdn.rawgit.com/kelektiv/node-uuid/v1.4.7/uuid.js"></script>
 
         <title>tPresent</title>
@@ -108,12 +108,12 @@
 
             $(function()
             {
-                showMetroDialog('div#default-message');
+                metroDialog.open('div#default-message');
 
                 // Retrieve local storage data
                 $('input#display_name').val(localStorage.getItem('display_name'));
                 $('input#room_name').val(localStorage.getItem('room_name'));
-                $('input#on_air').attr('autocomplete', 'off');
+                $('input#on_air').prop('autocomplete', 'off');
 
                 // Generates/retrieve an unique Id
                 uniqueId = localStorage.getItem('unique_id');
@@ -158,7 +158,7 @@
 
                 if (hasError)
                 {
-                    $('input#on_air').attr('checked', false);
+                    $('input#on_air').prop('checked', false);
                     return;
                 }
 
@@ -170,11 +170,11 @@
             {
                 setTimeout(releaseWebcam, animationDelay);
 
-                $('#favicon').attr('href', 'static/favicon_grey.png');
+                $('#favicon').prop('href', 'static/favicon_grey.png');
 
                 hideAll();
                 disableInputsEdition(false);
-                showMetroDialog('div#default-message');
+                metroDialog.open('div#default-message');
 
                 clearTimeout(refreshTimer);
                 clearInterval(refreshProgressionTimer);
@@ -193,7 +193,7 @@
                 $('div#refresh').removeClass('no-visible');
                 $('div#refresh').data('progress').set(0);
 
-                $('#favicon').attr('href', 'static/favicon_red.png');
+                $('#favicon').prop('href', 'static/favicon_red.png');
 
                 // Call sendPresence after a small delay to avoid first black/dark frane
                 setTimeout(function() {
@@ -207,7 +207,7 @@
             function onWebcamError(err)
             {
                 stopOnAir();
-                $('input#on_air').attr('checked', false);
+                $('input#on_air').prop('checked', false);
                 if (err.name == 'PermissionDeniedError')
                 {
                     showError('Unable to access capture device. Please authorized camera access.');
@@ -222,7 +222,7 @@
             {
                 hideAll();
                 $('div#error-message').find('p').text(msg);
-                showMetroDialog('div#error-message');
+                metroDialog.open('div#error-message');
             }
 
             function hideAll()
@@ -230,14 +230,14 @@
                 $('div#tiles-container').addClass('no-visible');
                 $('span#on_air_icon').addClass('no-visible');
                 $('div#refresh').addClass('no-visible');
-                hideMetroDialog('div#error-message');
-                hideMetroDialog('div#default-message');
+                metroDialog.close('div#error-message');
+                metroDialog.close('div#default-message');
             }
 
             function disableInputsEdition(flag)
             {
-                $('input#display_name').attr('disabled', flag);
-                $('input#room_name').attr('disabled', flag);
+                $('input#display_name').prop('disabled', flag);
+                $('input#room_name').prop('disabled', flag);
             }
 
             function startRefreshProgression()
@@ -257,7 +257,7 @@
                     if (val >= 90)
                     {
                         favicon_color = favicon_color == 'red' ? 'blue' : 'red';
-                        $('#favicon').attr('href', 'static/favicon_' + favicon_color + '.png');
+                        $('#favicon').prop('href', 'static/favicon_' + favicon_color + '.png');
                     }
 
                     val += step;
@@ -265,7 +265,7 @@
                     if (val >= 100)
                     {
                         favicon_color = 'red;'
-                        $('#favicon').attr('href', 'static/favicon_red.png');
+                        $('#favicon').prop('href', 'static/favicon_red.png');
                         clearInterval(refreshProgressionTimer);
                     }
                 }, updateInterval);
