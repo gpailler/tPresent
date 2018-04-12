@@ -8,12 +8,14 @@
         <link id="favicon" rel="shortcut icon" type="image/png" href="static/favicon_grey.png" />
 
         <link href="https://cdn.rawgit.com/olton/Metro-UI-CSS/5b845124/build/css/metro.min.css" rel="stylesheet">
+        <link href="https://cdn.rawgit.com/olton/Metro-UI-CSS/5b845124/build/css/metro-schemes.css" rel="stylesheet">
         <link href="https://cdn.rawgit.com/olton/Metro-UI-CSS/5b845124/build/css/metro-icons.min.css" rel="stylesheet">
 
         <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
         <script src="https://cdn.rawgit.com/olton/Metro-UI-CSS/5b845124/build/js/metro.min.js"></script>
         <script src="https://cdn.rawgit.com/jhuckaby/webcamjs/b531a115/webcam.min.js"></script>
         <script src="https://cdn.rawgit.com/kelektiv/node-uuid/v1.4.7/uuid.js"></script>
+        <script src="https://cdn.rawgit.com/websanova/js-url/13a3d272/url.min.js"></script>
 
         <title>tPresent</title>
     </head>
@@ -68,11 +70,20 @@
                             </div>
                         </div>
 
-                        <!-- GitHub -->
-                        <div class="cell align-right">
-                            tPresent on <a href="https://www.github.com/gpailler/tpresent">GitHub</a>
-                            <br />
-                            Version {{ version }}
+                        <!-- Info / GitHub -->
+                        <div class="cell">
+                            <ul class="t-menu horizontal darcula compact place-right">
+                                <li>
+                                    <a href="https://www.github.com/gpailler/tpresent">
+                                        <span class="mif-github mif-2x"></span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="metroDialog.open('#dialog-information'); event.preventDefault();">
+                                        <span class="mif-info mif-2x"></span>
+                                    </a>
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </div>
@@ -94,6 +105,23 @@
         <div id="error-message" class="dialog padding30" data-role="dialog" data-type="alert">
             <h2>Error</h2>
             <p />
+        </div>
+
+        <div data-role="dialog" id="dialog-information" class="padding20 dialog" data-close-button="false" data-overlay="true" data-overlay-color="op-dark" data-overlay-click-close="true">
+            <h1>tPresent {{ version }}</h1>
+            <p>
+                <h4>
+                    Howto preconfigure room name, display name or autostart?
+                </h4>
+                You can append fragments to the url to override the standard behavior. Supported fragments are:
+                <ul>
+                    <li><b>room_name=[VALUE]</b> Specify a room name. If not specified, the stored room name is used.</li>
+                    <li><b>display_name=[VALUE]</b> Specify a display name. If not specified, the stored display name is used.</li>
+                    <li><b>autostart</b> Autostart tPresent if room name and display name are specified.</li>
+                </ul>
+                For example, the following URL will start tPresent with MyRoom selected<br />
+                <a href="{{ base_url }}#room_name=MyRoom&autostart">{{ base_url }}#room_name=MyRoom&amp;autostart</href>
+            </p>
         </div>
 
 
@@ -124,7 +152,7 @@
                 }
 
                 // On air button (stream activation/deactivation)
-                $('input#on_air').change(function()
+                $('input#on_air').on('change', function()
                 {
                     if($(this).is(":checked"))
                     {
@@ -135,6 +163,25 @@
                         stopOnAir();
                     }
                 });
+
+                // Change configuration according hash in URL
+                var hash = $.url('#display_name');
+                if (hash !== undefined)
+                {
+                    $('input#display_name').val(hash);
+                }
+
+                hash = $.url('#room_name');
+                if (hash !== undefined)
+                {
+                    $('input#room_name').val(hash);
+                }
+
+                hash = $.url('#autostart');
+                if (hash !== undefined)
+                {
+                    $('input#on_air').prop('checked', true).change();
+                }
             });
 
             function startOnAir()
@@ -158,7 +205,7 @@
 
                 if (hasError)
                 {
-                    $('input#on_air').prop('checked', false);
+                    $('input#on_air').prop('checked', false).change();
                     return;
                 }
 
@@ -207,7 +254,7 @@
             function onWebcamError(err)
             {
                 stopOnAir();
-                $('input#on_air').prop('checked', false);
+                $('input#on_air').prop('checked', false).change();
                 if (err.name == 'PermissionDeniedError')
                 {
                     showError('Unable to access capture device. Please authorized camera access.');
