@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify, abort, send_from_directory
-from werkzeug.contrib.cache import SimpleCache
+from flask_caching import Cache
 from datetime import datetime, timedelta
 
 DEBUG = False
@@ -10,11 +10,10 @@ REFRESH_INTERVAL = 60  # Seconds
 CACHE_RETENTION = REFRESH_INTERVAL * 2
 CAPTURE_WIDTH = 640
 CAPTURE_HEIGHT = 480
-VERSION = '1.0.3'
+VERSION = '1.0.4'
 
-cache = SimpleCache()
 app = Flask(__name__)
-
+cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 
 class RoomCache:
     def __init__(self):
