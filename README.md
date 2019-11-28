@@ -40,9 +40,3 @@ You may have to change some constants in `flask_app.py` to match your needs (bin
 ---
 Tested on Chrome and Firefox on Windows/Mac.
 Image capture uses [webcamjs](https://github.com/jhuckaby/webcamjs) library and all major browsers should be supported.
-
-
-### Donations :gift:
----
-Donations are always welcomed :smile:
-https://www.paypal.me/gpailler
