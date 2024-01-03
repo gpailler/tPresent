@@ -8,7 +8,7 @@ This project targets only presence feature. It was a great feature of Sqwiggle b
 ---
 You can use online version hosted on https://tPresent.pythonanywhere.com or run you own instance.
 
-Simply select an name, a room and switch online. A still image is shot every minute. Interface is refreshed every minute with all members images.
+Simply select a name, a room and switch online. A still image is shot every minute. Interface is refreshed every minute with all members images.
 
 ![tpresent2](https://cloud.githubusercontent.com/assets/3621529/15092339/6ac2a506-1499-11e6-876b-c4c26402ab1f.jpg)
 
